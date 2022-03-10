@@ -37,7 +37,7 @@ class Guesses(models.Model):
         flags = self.evaluate_guess(guess)
         if min(flags) == 2:
             return f"You won! The correct word was {guess}!"
-        self.wordlist = self.filter_wordlist(guess)
+        self.filter_wordlist(guess)
 
     def evaluate_guess(self, guess):
         correct_letters = list(self.correct_word)
@@ -51,23 +51,28 @@ class Guesses(models.Model):
         return flags
 
     def filter_wordlist(self, guess):
-        flags = self.evaluate_guess(guess)
+        # handy lambda to apply a regex filter
         reg_filter = lambda regex: [w for w in self.wordlist if re.search(regex, w)]
-        # filter for letters in the right place
-        green = re.compile("".join(c if f == 2 else '.' for c, f in zip(guess, flags)))
-        self.wordlist = reg_filter(green)
-        # filter for known incorrect letters
-        # TODO DOUBLE CHECK THIS...
-        grey = re.compile("".join(c for c in guess if c not in self.correct_word))
-        self.wordlist = reg_filter(grey)
+        flags = self.evaluate_guess(guess)
+        # filter for letters in the right place (green flags)
+        right_position = re.compile("".join(c if f == 2 else '.' for c, f in zip(guess, flags)))
+        self.wordlist = reg_filter(right_position)
         # filter for yellow flags
-        # first filter by known wrong positions
-        wrong_position = re.compile("".join(f"[^{c}]" for i, c in enumerate(guess) if flags[i] == 1))
+        # first: wrong positions
+        wrong_position = re.compile("".join(f"[^{c}]" if flags[i] == 1 else "." for i, c in enumerate(guess)))
         self.wordlist = reg_filter(wrong_position)
-        # then filter to ensure we're looking at the right letters
+        # then words that include at least one of each of the correct letters
         correct_letters = [c for i, c in enumerate(guess) if flags[i] == 1]
         for l in correct_letters:
-            has_letter = re.compile(f"[{c}]+")
+            has_letter = re.compile(f"[{l}]+")
             self.wordlist = reg_filter(has_letter)
+        # finally, filter for known incorrect letters
+        drop = "".join([c for c in guess if c not in self.correct_word])
+        if drop != "":
+            wrong_letters = re.compile(f"[^{drop}]")
+            self.wordlist = reg_filter(wrong_letters)
+
     def show_possible_words(self, n=10):
+        if n > len(self.wordlist):
+            return random.choices(self.wordlist) # randomize to avoid accidentally giving a hint due to the order of all_words
         return random.choices(self.wordlist, k = n)
