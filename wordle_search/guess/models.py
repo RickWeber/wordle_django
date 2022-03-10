@@ -2,7 +2,6 @@ from django.db import models
 import datetime
 import random
 import re
-from typing import NewType
 from .wordlists import correct_words, all_words
 
 # Create your models here.
