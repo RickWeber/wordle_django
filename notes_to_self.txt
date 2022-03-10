@@ -1,0 +1,30 @@
+Alright, let's think about what I'm after so I can create useful models.
+
+There are two big components: the guess assistant and the initial guess
+evaluator.
+
+The guess assistant will create a chain of guesses. Each guess will be a word
+and a set of flags. After each guess, a list of possible words will be
+shortened. Once the evaluator is up, I can score the list of possible words and
+show the user the top 10. But first I need to return the list, then figure out
+the filter. 
+
+For the evaluator, the basic unit will be a word. Or is it a chain of guesses
+also? I don't just want the best first guess, but the best first and second, and
+ultimately a best second guess conditioned on the flags recieved from the best
+first guess. 
+
+For the simplest version, I guess I could ask how much information they provide
+(basically, how much shorter is the list of possible words, on average, if you
+guess a particular word?). I think I should use a chain of guesses as the
+basic data type here too.
+
+So here's what I want:
+* Today's correct answer (use the list of known answers and compare today to the
+  first day).
+* A chain of guesses class that will evaluate a set of guesses against a given
+  word (today's answer by default). 
+* A program to evaluate chains of guesses and return results aggregated by the
+  first guess of those chains. (that will be a separate app)
+
+
