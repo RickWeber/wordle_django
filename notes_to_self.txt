@@ -1,3 +1,11 @@
+
+== Mar 11 am ==
+Okay, I just used it on the shell and it's not quite filtering words properly.
+The word of the day is 'watch' but the only word left in the wordlist was
+'ratch'. I also tried match, latch, catch, and batch which should have been on
+the list. I'll have to check that logic. 
+
+== Mar 10 ==
 Here's what I want:
 * Today's correct answer (use the list of known answers and compare today to the
   first day).
