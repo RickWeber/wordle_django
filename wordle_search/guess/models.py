@@ -4,9 +4,8 @@ import random
 import re
 from .wordlists import correct_words, all_words
 
-# Create your models here.
 class TodaysAnswer(models.Model):
-    word = models.CharField(max_length=5)
+    word = models.CharField(max_length=5) # should there be a min length too?
     day = models.IntegerField(default=0)
     def __init__(self):
         today = datetime.date.today()
@@ -60,12 +59,14 @@ class Guesses(models.Model):
         # first: wrong positions
         wrong_position = re.compile("".join(f"[^{c}]" if flags[i] == 1 else "." for i, c in enumerate(guess)))
         self.wordlist = reg_filter(wrong_position)
-        # then words that include at least one of each of the correct letters
+        # then words that include at least one of each of the correct letters. 
+        # TODO: make sure to filter for at least n of each the correct letters if we know there's at least n copies of that letter.
         correct_letters = [c for i, c in enumerate(guess) if flags[i] == 1]
         for l in correct_letters:
             has_letter = re.compile(f"[{l}]+")
             self.wordlist = reg_filter(has_letter)
         # finally, filter for known incorrect letters
+        # TODO: Make sure we aren't messing things up when guess has multiple copies of a letter.
         drop = "".join([c for c in guess if c not in self.correct_word])
         if drop != "":
             wrong_letters = re.compile(f"[^{drop}]")
@@ -75,3 +76,13 @@ class Guesses(models.Model):
         if n > len(self.wordlist):
             return random.choices(self.wordlist) # randomize to avoid accidentally giving a hint due to the order of all_words
         return random.choices(self.wordlist, k = n)
+
+class Evaluate_words(models.Model):
+    wordlist = all_words
+    guesses = models.CharField(max_length=30)
+    correct_word = models.CharField(max_length=5)
+
+    def __init__(self, correct_word = None):
+        self.correct_word = correct_word or TodaysAnswer().word
+        self.guesses = ""
+        self.guesses_taken = 0

@@ -1,3 +1,59 @@
+== Mar 22 ==
+Alright, I'm back from Spring break and pretty rusty on this. I'm going to just
+poke around in the shell for a bit and see what I can remember. 
+
+'''
+from guess.models import *
+ta = TodaysAnswer()
+ta.word # gives the answer
+g = Guesses() # initiate a chain of guesses
+g.next_guess('sloth')
+g.show_possible_words()
+# ['sloth']
+'''
+
+Okay, that should also include slosh (the correct word for today). The problem
+must be in the evaluate_guess() method. Or maybe in filter_wordlist()? 
+
+evaluate_guess starts with the correct word, sets flags of 2 for any correct
+letters in the correct place (otherwise 0). Then it filters out the 2-flagged
+letters as 'letters_to_figure_out'. 
+At that point it looks through each letter of the guess (skipping 2-flagged
+letters) and asks if that letter is in letters_to_figure_out. If so, it flags it
+with a 1, and removes that letter from letters_to_figure_out before evaluating
+the rest of the letters. That means that the first yellow flaggable letter will
+get the yellow flag and extraneous copies won't get a yellow flag (unless
+there's some left over in letters_to_figure_out.
+
+That whole process seems okay to me. Maybe this is where I need to start writing
+some tests.
+
+What about filter_wordlist()?
+It sets up the reg_filter lambda to create a list based on the current wordlist
+based on some regex statement. Then it takes the guess, calculates the flags
+(which seems okay), and checks for letters in the right position.
+At line 56 we're creating a regex statement along the lines of "sl..h" if the
+flags are "22__2". Then it filters the wordlist (getting only letters in the
+right position. It might be that reg_filter needs work. Again, I should probably
+figure out the right tests.
+So we (hypothetically) have the wordlist only showing words with known right
+letters. Then we get stuff in the wrong position. First we exclude that letter
+from that position (e.g. if the first letter is x and flagged yellow, we want to
+look for words that don't start with x). We do that for all of the yellow (1)
+flags at once. Fair enough. Filter out the wordlist. Then look for any words in
+the remaining wordlist that includes those letters somewhere. This might have a
+wrinkle for words with a yellow and green flag. For 'slosh', we might get a
+green and yellow flag on the s's, but include words with only 1 s. 
+For each of those correct letters, we filter the wordlist to make sure there's
+at least one. Then we get rid of the grey flags. 
+**This is probably where things are going wrong** (maybe)
+Right now it's looking for letters that aren't in the correct letter. That feels
+right, but still, spidey senses are tingling.
+If there's something to drop, then filter the wordlist to drop those words.
+(lines 72/73). I feel like this might need some work too.
+
+Alright, I'll take a closer look at this on Thursday. But I feel good right now
+(even though I know it isn't working properly).
 
 == Mar 11 am ==
 Okay, I just used it on the shell and it's not quite filtering words properly.
