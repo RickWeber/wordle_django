@@ -10,14 +10,13 @@ class TodaysAnswer(models.Model):
     def __init__(self):
         today = datetime.date.today()
         start = datetime.date(2021, 6, 19)
-        days_since_start = today - start
+        days_since_start = today - start # might have an issue with rounding. Am I off by a day if I check in the morning?
         self.day = days_since_start.days
         self.word = correct_words[days_since_start.days]
     def __str__(self):
         return self.word
 
 class Guesses(models.Model):
-    wordlist = all_words
     guesses = models.CharField(max_length=30)
     correct_word = models.CharField(max_length=5)
 
@@ -25,6 +24,7 @@ class Guesses(models.Model):
         self.correct_word = correct_word or TodaysAnswer().word
         self.guesses = ""
         self.guesses_taken = 0
+        self.wordlist = all_words
 
     def next_guess(self, guess):
         guess = guess.lower()
@@ -66,16 +66,23 @@ class Guesses(models.Model):
             has_letter = re.compile(f"[{l}]+")
             self.wordlist = reg_filter(has_letter)
         # finally, filter for known incorrect letters
-        # TODO: Make sure we aren't messing things up when guess has multiple copies of a letter.
+        # Note: we're not actually looking for cases where we get a gray flag on a second letter
+        # (e.g. guess = "loose", flags = "02000") just dropping all the letters we know aren't in there.
         drop = "".join([c for c in guess if c not in self.correct_word])
         if drop != "":
-            wrong_letters = re.compile(f"[^{drop}]")
+            wrong_letters = re.compile(f"[^{drop}]" + "{5}") # don't let it show up anywhere
             self.wordlist = reg_filter(wrong_letters)
+        # look at letters that were flagged gray but have another instance in the correct word
+        greys_not_dropped = [c for i, c in enumerate(guess) if flags[i] == 0 and c in self.correct_word]
+        for g in greys_not_dropped:
+            copies_in_word = self.correct_word.count(g)
+            extra_letters = re.compile(f"[^{g}]" + "{" + f"{copies_in_word + 1}" + ",}")
+            self.wordlist = reg_filter(extra_letters)
 
     def show_possible_words(self, n=10):
         if n > len(self.wordlist):
-            return random.choices(self.wordlist) # randomize to avoid accidentally giving a hint due to the order of all_words
-        return random.choices(self.wordlist, k = n)
+            return random.sample(self.wordlist, k = len(self.wordlist))
+        return random.sample(self.wordlist, k = n)
 
 class Evaluate_words(models.Model):
     wordlist = all_words
