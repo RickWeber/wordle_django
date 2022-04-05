@@ -9,7 +9,7 @@ class TodaysAnswer(models.Model):
     day = models.IntegerField(default=0)
     def __init__(self):
         today = datetime.date.today()
-        start = datetime.date(2021, 6, 19)
+        start = datetime.date(2021, 6, 18)
         days_since_start = today - start # might have an issue with rounding. Am I off by a day if I check in the morning?
         self.day = days_since_start.days
         self.word = correct_words[days_since_start.days]
@@ -93,3 +93,8 @@ class Evaluate_words(models.Model):
         self.correct_word = correct_word or TodaysAnswer().word
         self.guesses = ""
         self.guesses_taken = 0
+
+    def one_guess(self, guess):
+        g = Guesses(self.correct_word)
+        g.next_guess(guess)
+        return len(all_words) - len(g.wordlist)
