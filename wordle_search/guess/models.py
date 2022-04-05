@@ -22,16 +22,16 @@ class Guesses(models.Model):
 
     def __init__(self, correct_word = None):
         self.correct_word = correct_word or TodaysAnswer().word
-        self.guesses = ""
-        self.guesses_taken = 0
+        self.current_guess = models.CharField(max_length=5)
+        self.guesses = []
         self.wordlist = all_words
 
     def next_guess(self, guess):
         guess = guess.lower()
         self.guesses_taken += 1
-        if self.guesses_taken > 6:
+        if len(self.guesses) > 6:
             return "You're out of guesses!"
-        self.guesses += guess
+        self.guesses += [guess]
         flags = self.evaluate_guess(guess)
         if min(flags) == 2:
             return f"You won! The correct word was {guess}!"
