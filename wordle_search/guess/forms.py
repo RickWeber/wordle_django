@@ -1,5 +1,5 @@
 from django import forms
-from .models import Guesses
+from .models import Game
 from .wordlists import all_words
 
 #class GuessForm(forms.Form):
@@ -7,7 +7,7 @@ from .wordlists import all_words
 
 class GuessForm(forms.ModelForm):
     class Meta:
-        model = Guesses
+        model = Game
         fields = "__all__"
         exclude = ["correct_word"]
         #fields = ["current_guess"]

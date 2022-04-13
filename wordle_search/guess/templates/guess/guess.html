@@ -1,6 +1,9 @@
-<form action="/guess/" method="post">
+{% extends "guess/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<form action="/guess/" method="POST">
     {% csrf_token %}
-    {{ form }}
+    {{ form|crispy }}
     <input type="submit" value="Submit">
 </form>
 
@@ -10,3 +13,5 @@
     connect to models (here or in views?)
     and deal with accordingly.
 -->
+
+{% endblock %}

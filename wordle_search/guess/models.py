@@ -17,9 +17,10 @@ class TodaysAnswer(models.Model):
         return self.word
 
 class Game(models.Model):
+    guess = models.CharField(max_length=5)
+
     def __init__(self, correct_word = None):
         self.correct_word = correct_word or TodaysAnswer().word
-        self.current_guess = models.CharField(max_length=5)
         self.guesses = []
         self.wordlist = all_words
     
