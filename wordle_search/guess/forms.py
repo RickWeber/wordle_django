@@ -1,5 +1,5 @@
 from django import forms
-from .models import Guesses, TodaysAnswer
+from .models import Guesses
 from .wordlists import all_words
 
 #class GuessForm(forms.Form):
@@ -11,21 +11,3 @@ class GuessForm(forms.ModelForm):
         fields = "__all__"
         exclude = ["correct_word"]
         #fields = ["current_guess"]
-
-
-#class GuessForm(forms.ModelForm):
-#    class Meta:
-#        model = Guesses
-#    pass
-#
-## This should provide a text input
-## The form should validate the entry to make sure it's part 
-## of all_words.
-## Then it should run Guesses.next_guess() on the input, and
-## update the page to show that guess along with the associated
-## flags.
-#
-#
-#class CheatForm(forms.ModelForm):
-#    class Meta:
-#        model = TodaysAnswer
