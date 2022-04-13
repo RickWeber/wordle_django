@@ -5,33 +5,27 @@ import re
 from .wordlists import correct_words, all_words
 
 class TodaysAnswer(models.Model):
-    word = models.CharField(max_length=5) # should there be a min length too?
+    word = models.CharField(max_length=5)
     day = models.IntegerField(default=0)
     def __init__(self):
         today = datetime.date.today()
         start = datetime.date(2021, 6, 18)
-        days_since_start = today - start # might have an issue with rounding. Am I off by a day if I check in the morning?
+        days_since_start = today - start 
         self.day = days_since_start.days
         self.word = correct_words[days_since_start.days]
     def __str__(self):
         return self.word
 
-class Guesses(models.Model):
-    guesses = models.CharField(max_length=30)
-    correct_word = models.CharField(max_length=5)
-
+class Game(models.Model):
     def __init__(self, correct_word = None):
         self.correct_word = correct_word or TodaysAnswer().word
         self.current_guess = models.CharField(max_length=5)
         self.guesses = []
         self.wordlist = all_words
-
-    def next_guess(self, guess):
+    
+    def make_guess(self, guess):
         guess = guess.lower()
-        self.guesses_taken += 1
-        if len(self.guesses) > 6:
-            return "You're out of guesses!"
-        self.guesses += [guess]
+        self.guesses.append(guess)
         flags = self.evaluate_guess(guess)
         if min(flags) == 2:
             return f"You won! The correct word was {guess}!"
@@ -95,6 +89,6 @@ class Evaluate_words(models.Model):
         self.guesses_taken = 0
 
     def one_guess(self, guess):
-        g = Guesses(self.correct_word)
+        g = Game(self.correct_word)
         g.next_guess(guess)
         return len(all_words) - len(g.wordlist)
