@@ -1,17 +1,41 @@
 {% extends "guess/base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
+<!--
 <form action="/guess/" method="POST">
     {% csrf_token %}
     {{ form|crispy }}
     <input type="submit" value="Submit">
 </form>
-
-<!--
     form context passed in,
     then for loop over context to look at guesses
     connect to models (here or in views?)
     and deal with accordingly.
 -->
+<div class="content-section">
+    <form method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Make your guess</legend>
+            {{ form|crispy }}
+        </fieldset>
+        <div class="form-group">
+            <button class="btn btn-outline-info" type="submit">Submit guess</button>
+            <small class="text-muted ml-2">
+                <a href="{% url 'cheat' %}">give up?</a>
+            </small>
+        </div>
+    </form>
+</div>
 
 {% endblock %}
+{% if guesses %}
+{% block wordlist %}
+<div class="content-section">
+{% for guess in guesses %}
+<p>{{guess}} </p>
+<p>show flags</p>
+{% endfor %}
+</div>
+{% endblock %}
+{% endif %}

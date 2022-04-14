@@ -1,11 +1,10 @@
 from importlib.metadata import requires
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.views.generic import CreateView
+from django.views.generic import CreateView, DetailView
 
-from .forms import GuessForm
 from .models import TodaysAnswer
-from .models import Game
+from .models import Game, Guess
 from .wordlists import all_words
 
 # Create your views here.
@@ -33,9 +32,18 @@ def guess(request):
 """
 
 class Guess(CreateView):
-    model = Game
+    model = Guess
     template_name = "guess/guess.html"
     fields = ['guess']
+    def form_valid(self, form):
+        guess = self.request.guess
+        valid_guess = guess in all_words
+        if valid_guess:
+            return super().form_valid(form)
+        else:
+            return
+    #pass back context
+
 #    def form_valid(self, form):
 #        guess = self.request.guess
 #        valid_guess = guess in all_words
@@ -44,6 +52,11 @@ class Guess(CreateView):
 #        else:
 #            super().form_valid(form)
 
-def cheat(request):
+class Cheat(DetailView):
+    model = TodaysAnswer
+    template_name = "guess/cheat.html"
+    context_object_name = 'answer'
     ans = TodaysAnswer().word
-    return HttpResponse(f"Today's correct word is: {ans}")
+
+def cheat(request):
+    return HttpResponse(f"Today's answer is {TodaysAnswer().word}.")

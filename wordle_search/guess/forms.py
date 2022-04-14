@@ -1,5 +1,7 @@
 from django import forms
-from .models import Game
+from django.core import validators
+from django.core.exceptions import ValidationError
+from .models import Game, Guess
 from .wordlists import all_words
 
 #class GuessForm(forms.Form):
@@ -7,7 +9,10 @@ from .wordlists import all_words
 
 class GuessForm(forms.ModelForm):
     class Meta:
-        model = Game
-        fields = "__all__"
-        exclude = ["correct_word"]
-        #fields = ["current_guess"]
+        model = Guess
+        fields = ["guess"]
+    guess = forms.CharField(validators=[
+        validators.MinLengthValidator(5, "Please enter a 5 letter guess."),
+        validators.MaxLengthValidator(5, "Please enter a 5 letter guess."),
+    ])
+    g = Guess(guess)
